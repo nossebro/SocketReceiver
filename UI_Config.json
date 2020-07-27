@@ -1,0 +1,15 @@
+{
+	"output_file": "Settings.json",
+	"DebugMode": {
+		"type": "checkbox",
+		"value": false,
+		"label": "Debug Messages",
+		"tooltip": "Enables debug log messages"
+	},
+	"Events": {
+		"type": "textbox",
+		"value": "STREAMLABS,TWITCHPUBSUB,TWITCHTMI",
+		"label": "Events",
+		"tooltip": "Events to listen to"
+	}
+}
