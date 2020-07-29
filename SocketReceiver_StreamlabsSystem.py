@@ -194,7 +194,7 @@ def Tick():
 		try:
 			LocalSocket.Close(1006, "No connection confirmation received")
 		except:
-			Logger.error("Could not close TwitchPubSub socket gracefully")
+			Logger.error("Could not close LocalSocket socket gracefully")
 		LocalSocket.Connect()
 		LastTime = Now
 	if SinceLast >= 60:
