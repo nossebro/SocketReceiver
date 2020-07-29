@@ -133,8 +133,7 @@ def Init():
 	global LocalSocket
 	global LocalAPI
 	LocalAPI = GetAPIKey(APIKeyFile)
-#	LocalSocket = WebSocket(LocalAPI["Socket"])
-	LocalSocket = WebSocket("ws://127.0.0.1:8000/")
+	LocalSocket = WebSocket(LocalAPI["Socket"])
 	LocalSocket.OnOpen += LocalSocketConnected
 	LocalSocket.OnClose += LocalSocketDisconnected
 	LocalSocket.OnMessage += LocalSocketEvent
@@ -195,7 +194,7 @@ def Tick():
 		try:
 			LocalSocket.Close(1006, "No connection confirmation received")
 		except:
-			Logger.error("Could not close LocalSocket socket gracefully")
+			Logger.error("Could not close TwitchPubSub socket gracefully")
 		LocalSocket.Connect()
 		LastTime = Now
 	if SinceLast >= 60:
