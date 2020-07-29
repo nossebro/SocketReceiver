@@ -143,7 +143,7 @@ def Init():
 		LocalSocket.Connect()
 	else:
 		Logger.critical("API_Key.js missing from script folder")
-
+	
 	global LastTime
 	LastTime = time.time()
 
@@ -218,7 +218,7 @@ def LocalSocketConnected(ws, data):
 		"api_key": LocalAPI["Key"],
 		"events": ScriptSettings.Events.split(",")
 	}
-	LocalSocket.Send(json.dumps(Auth))
+	ws.Send(json.dumps(Auth))
 	Logger.debug("Auth: {0}".format(json.dumps(Auth)))
 
 #---------------------------------------
