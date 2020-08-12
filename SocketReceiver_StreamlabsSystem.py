@@ -116,10 +116,13 @@ def GetAPIKey(apifile=None):
 	return API
 
 def MergeLists(x = dict(), y = dict()):
+	z = dict()
 	for attr in x:
 		if attr not in y:
-			y.append(attr)
-	return y
+			z[attr] = x[attr]
+		else:
+			z[attr] = y[attr]
+	return z
 
 #---------------------------------------
 #   Chatbot Initialize Function
