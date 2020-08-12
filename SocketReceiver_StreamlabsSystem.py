@@ -18,7 +18,7 @@ from WebSocketSharp import WebSocket
 ScriptName = "SocketReceiver"
 Website = "https://github.com/nossebro/SocketReceiver"
 Creator = "nossebro"
-Version = "0.0.1"
+Version = "0.0.2"
 Description = "Read events from the local SLCB socket"
 
 #---------------------------------------
@@ -253,6 +253,8 @@ def LocalSocketError(ws, data):
 def LocalSocketEvent(ws, data):
 	if data.IsText:
 		event = json.loads(data.Data)
+		if "data" in event and isinstance(event["data"], str):
+			event["data"] = json.loads(event["data"])
 		if event["event"] == "EVENT_CONNECTED":
 			global LocalSocketIsConnected
 			LocalSocketIsConnected = True
