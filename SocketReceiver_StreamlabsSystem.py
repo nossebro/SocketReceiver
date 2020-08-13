@@ -8,7 +8,6 @@ import re
 import os
 import codecs
 import json
-import time
 clr.AddReference("websocket-sharp.dll")
 from WebSocketSharp import WebSocket
 
@@ -27,7 +26,6 @@ Description = "Read events from the local SLCB socket"
 ScriptSettings = None
 LocalAPI = None
 Logger = None
-LastTime = None
 LocalSocket = None
 LocalSocketIsConnected = False
 SettingsFile = os.path.join(os.path.dirname(__file__), "Settings.json")
@@ -147,8 +145,7 @@ def Init():
 	else:
 		Logger.critical("API_Key.js missing from script folder")
 	
-	global LastTime
-	LastTime = time.time()
+	Parent.AddCooldown(ScriptName, "LocalSocket", 10)
 
 #---------------------------------------
 #   Chatbot Script Unload Function
@@ -189,26 +186,22 @@ def Execute(data):
 #   Chatbot Tick Function
 #---------------------------------------
 def Tick():
-	global LastTime
-	Now = time.time()
-	SinceLast = Now - LastTime
-	if SinceLast >= 10 and not LocalSocketIsConnected and all (keys in LocalAPI for keys in ("Key", "Socket")):
+	if not Parent.IsOnCooldown(ScriptName, "LocalSocket") and not LocalSocketIsConnected and all (keys in LocalAPI for keys in ("Key", "Socket")):
 		Logger.warning("No EVENT_CONNECTED received from LocalSocket, reconnecting")
 		try:
 			LocalSocket.Close(1006, "No connection confirmation received")
 		except:
 			Logger.error("Could not close LocalSocket socket gracefully")
 		LocalSocket.Connect()
-		LastTime = Now
-	if SinceLast >= 60:
-		if not LocalSocket.IsAlive:
-			Logger.warning("LocalSocket seems dead, reconnecting")
-			try:
-				LocalSocket.Close()
-			except:
-				Logger.error("Could not close LocalSocket gracefully")
-			LocalSocket.Connect()
-		LastTime = Now
+		Parent.AddCooldown(ScriptName, "LocalSocket", 10)
+	if not Parent.IsOnCooldown(ScriptName, "LocalSocket") and not LocalSocket.IsAlive:
+		Logger.warning("LocalSocket seems dead, reconnecting")
+		try:
+			LocalSocket.Close(1006, "No connection")
+		except:
+			Logger.error("Could not close LocalSocket gracefully")
+		LocalSocket.Connect()
+		Parent.AddCooldown(ScriptName, "LocalSocket", 10)
 
 #---------------------------------------
 #   LocalSocket Connect Function
