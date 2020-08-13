@@ -186,12 +186,13 @@ def Execute(data):
 #   Chatbot Tick Function
 #---------------------------------------
 def Tick():
+	global LocalSocketIsConnected
 	if not Parent.IsOnCooldown(ScriptName, "LocalSocket") and not LocalSocketIsConnected and all (keys in LocalAPI for keys in ("Key", "Socket")):
 		Logger.warning("No EVENT_CONNECTED received from LocalSocket, reconnecting")
 		try:
 			LocalSocket.Close(1006, "No connection confirmation received")
 		except:
-			Logger.error("Could not close LocalSocket socket gracefully")
+			Logger.error("Could not close LocalSocket gracefully")
 		LocalSocket.Connect()
 		Parent.AddCooldown(ScriptName, "LocalSocket", 10)
 	if not Parent.IsOnCooldown(ScriptName, "LocalSocket") and not LocalSocket.IsAlive:
