@@ -134,16 +134,13 @@ def Init():
 	global LocalSocket
 	global LocalAPI
 	LocalAPI = GetAPIKey(APIKeyFile)
-	LocalSocket = WebSocket(LocalAPI["Socket"])
-	LocalSocket.OnOpen += LocalSocketConnected
-	LocalSocket.OnClose += LocalSocketDisconnected
-	LocalSocket.OnMessage += LocalSocketEvent
-	LocalSocket.OnError += LocalSocketError
-
 	if all (keys in LocalAPI for keys in ("Key", "Socket")):
+		LocalSocket = WebSocket(LocalAPI["Socket"])
+		LocalSocket.OnOpen += LocalSocketConnected
+		LocalSocket.OnClose += LocalSocketDisconnected
+		LocalSocket.OnMessage += LocalSocketEvent
+		LocalSocket.OnError += LocalSocketError
 		LocalSocket.Connect()
-	else:
-		Logger.critical("API_Key.js missing from script folder")
 	
 	Parent.AddCooldown(ScriptName, "LocalSocket", 10)
 
@@ -153,14 +150,13 @@ def Init():
 def Unload():
 	global LocalSocket
 	global Logger
-	# Disconnect LocalSocket cleanly
 	if LocalSocket:
 		LocalSocket.Close(1000, "Program exit")
 		LocalSocket = None
 		Logger.debug("LocalSocket Disconnected")
-	if Logger:
-		Logger.handlers.Clear()
-		Logger = None
+	for handler in Logger.handlers[:]:
+		Logger.removeHandler(handler)
+	Logger = None
 
 #---------------------------------------
 #   Chatbot Save Settings Function
@@ -187,7 +183,7 @@ def Execute(data):
 #---------------------------------------
 def Tick():
 	global LocalSocketIsConnected
-	if not Parent.IsOnCooldown(ScriptName, "LocalSocket") and not LocalSocketIsConnected and all (keys in LocalAPI for keys in ("Key", "Socket")):
+	if not Parent.IsOnCooldown(ScriptName, "LocalSocket") and LocalSocket and not LocalSocketIsConnected and all (keys in LocalAPI for keys in ("Key", "Socket")):
 		Logger.warning("No EVENT_CONNECTED received from LocalSocket, reconnecting")
 		try:
 			LocalSocket.Close(1006, "No connection confirmation received")
@@ -195,7 +191,7 @@ def Tick():
 			Logger.error("Could not close LocalSocket gracefully")
 		LocalSocket.Connect()
 		Parent.AddCooldown(ScriptName, "LocalSocket", 10)
-	if not Parent.IsOnCooldown(ScriptName, "LocalSocket") and not LocalSocket.IsAlive:
+	if not Parent.IsOnCooldown(ScriptName, "LocalSocket") and LocalSocket and not LocalSocket.IsAlive:
 		Logger.warning("LocalSocket seems dead, reconnecting")
 		try:
 			LocalSocket.Close(1006, "No connection")
