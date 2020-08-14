@@ -17,7 +17,7 @@ from WebSocketSharp import WebSocket
 ScriptName = "SocketReceiver"
 Website = "https://github.com/nossebro/SocketReceiver"
 Creator = "nossebro"
-Version = "0.0.2"
+Version = "0.0.3"
 Description = "Read events from the local SLCB socket"
 
 #---------------------------------------
