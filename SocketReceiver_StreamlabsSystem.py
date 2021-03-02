@@ -20,7 +20,7 @@ from WebSocketSharp import WebSocket
 ScriptName = "SocketReceiver"
 Website = "https://github.com/nossebro/SocketReceiver"
 Creator = "nossebro"
-Version = "0.0.4"
+Version = "0.0.5"
 Description = "Read events from the local SLCB socket"
 
 #---------------------------------------
@@ -110,17 +110,14 @@ def GetLogger():
 	return log
 
 def GetAPIKey(apifile=None):
-	API = dict()
+	API = None
 	try:
 		with codecs.open(apifile, encoding="utf-8-sig", mode="r") as f:
 			lines = f.readlines()
-		matches = re.search(r"\"\s?([0-9a-f]+)\".*\"\s?(ws://[0-9.:a-z]+/\w+)\"", "".join(lines))
-		if matches:
-			API["Key"] = matches.group(1)
-			API["Socket"] = matches.group(2)
-			Logger.debug("Got Key ({0}) and Socket ({1}) from API_Key.js".format(matches.group(1), matches.group(2)))
-	except:
-		Logger.critical("API_Key.js is missing in script folder")
+		API = re.search(r"\"\s?(?P<Key>[0-9a-f]+)\".*\"\s?(?P<Socket>ws://[0-9.:a-z]+/\w+)\"", "".join(lines)).groupdict()
+		Logger.debug("Got Key ({0}) and Socket ({1}) from API_Key.js".format(API["Key"], API["Socket"]))
+	except Exception as e:
+		Logger.error(e)
 	return API
 
 #---------------------------------------

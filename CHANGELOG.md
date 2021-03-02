@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.5 - API_Key updates
+
+* Minor code changes
+
 ## 0.0.4 - Github actions
 
 * Update Github actions
