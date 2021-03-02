@@ -1,15 +1,15 @@
 {
 	"output_file": "Settings.json",
+	"Events": {
+		"type": "textbox",
+		"value": "EVENT_CHEER,EVENT_DONATION,EVENT_FOLLOW,EVENT_HOST,EVENT_SUB",
+		"label": "Events",
+		"tooltip": "Events to listen to"
+	},
 	"DebugMode": {
 		"type": "checkbox",
 		"value": false,
 		"label": "Debug Messages",
 		"tooltip": "Enables debug log messages"
-	},
-	"Events": {
-		"type": "textbox",
-		"value": "STREAMLABS,TWITCHPUBSUB,TWITCHTMI",
-		"label": "Events",
-		"tooltip": "Events to listen to"
 	}
 }

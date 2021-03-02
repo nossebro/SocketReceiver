@@ -1,3 +1,6 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
 #---------------------------------------
 #   Import Libraries
 #---------------------------------------
@@ -17,7 +20,7 @@ from WebSocketSharp import WebSocket
 ScriptName = "SocketReceiver"
 Website = "https://github.com/nossebro/SocketReceiver"
 Creator = "nossebro"
-Version = "0.0.3"
+Version = "0.0.4"
 Description = "Read events from the local SLCB socket"
 
 #---------------------------------------
@@ -52,9 +55,16 @@ class Settings(object):
 		try:
 			with codecs.open(settingsfile, encoding="utf-8-sig", mode="r") as f:
 				settings = json.load(f, encoding="utf-8")
-			self.__dict__ = MergeLists(defaults, settings)
+			self.__dict__ = self.MergeSettings(defaults, settings)
 		except:
 			self.__dict__ = defaults
+
+	def MergeSettings(self, x = dict(), y = dict()):
+		z = x.copy()
+		for attr in x:
+			if attr in y:
+				z[attr] = y[attr]
+		return z
 
 	def DefaultSettings(self, settingsfile=None):
 		defaults = dict()
@@ -69,7 +79,7 @@ class Settings(object):
 		return defaults
 
 	def Reload(self, jsondata):
-		self.__dict__ = MergeLists(self.DefaultSettings(UIConfigFile), json.loads(jsondata, encoding="utf-8"))
+		self.__dict__ = self.MergeSettings(self.DefaultSettings(UIConfigFile), json.loads(jsondata, encoding="utf-8"))
 
 #---------------------------------------
 #   Script Functions
@@ -104,7 +114,7 @@ def GetAPIKey(apifile=None):
 	try:
 		with codecs.open(apifile, encoding="utf-8-sig", mode="r") as f:
 			lines = f.readlines()
-		matches = re.search(r"\"\s?([0-9a-f]+)\".*\"\s?(ws://[0-9.:]+/\w+)\"", "".join(lines))
+		matches = re.search(r"\"\s?([0-9a-f]+)\".*\"\s?(ws://[0-9.:a-z]+/\w+)\"", "".join(lines))
 		if matches:
 			API["Key"] = matches.group(1)
 			API["Socket"] = matches.group(2)
@@ -112,15 +122,6 @@ def GetAPIKey(apifile=None):
 	except:
 		Logger.critical("API_Key.js is missing in script folder")
 	return API
-
-def MergeLists(x = dict(), y = dict()):
-	z = dict()
-	for attr in x:
-		if attr not in y:
-			z[attr] = x[attr]
-		else:
-			z[attr] = y[attr]
-	return z
 
 #---------------------------------------
 #   Chatbot Initialize Function
@@ -149,14 +150,15 @@ def Init():
 #---------------------------------------
 def Unload():
 	global LocalSocket
-	global Logger
 	if LocalSocket:
 		LocalSocket.Close(1000, "Program exit")
 		LocalSocket = None
 		Logger.debug("LocalSocket Disconnected")
-	for handler in Logger.handlers[:]:
-		Logger.removeHandler(handler)
-	Logger = None
+	global Logger
+	if Logger:
+		for handler in Logger.handlers[:]:
+			Logger.removeHandler(handler)
+		Logger = None
 
 #---------------------------------------
 #   Chatbot Save Settings Function
@@ -245,6 +247,7 @@ def LocalSocketEvent(ws, data):
 		event = json.loads(data.Data)
 		if "data" in event and isinstance(event["data"], str):
 			event["data"] = json.loads(event["data"])
+		Logger.info(json.dumps(event))
 		if event["event"] == "EVENT_CONNECTED":
 			global LocalSocketIsConnected
 			LocalSocketIsConnected = True
