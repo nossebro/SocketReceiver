@@ -11,4 +11,4 @@ A Streamlabs Chatbot (SLCB) Script that uses [websocket-sharp](https://github.co
 5. Reload all scripts, so the new API_Key.js file gets picked up.
 6. Review the script's configuration in SLCB.
 
-For events, you can install any or all of the SLCB mirror scripts: [StreamlabsSocketMirror](https://github.com/nossebro/StreamlabsSocketMirror), [TwitchPubSubMirror](https://github.com/nossebro/TwitchPubSubMirror) and/or [TwitchTMIMirror](https://github.com/nossebro/TwitchTMIMirror).
+For additional events, you can install any or all of the SLCB mirror scripts: [StreamlabsSocketMirror](https://github.com/nossebro/StreamlabsSocketMirror), [TwitchPubSubMirror](https://github.com/nossebro/TwitchPubSubMirror) and/or [TwitchTMIMirror](https://github.com/nossebro/TwitchTMIMirror).
