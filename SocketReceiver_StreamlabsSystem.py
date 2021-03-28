@@ -20,7 +20,7 @@ from WebSocketSharp import WebSocket
 ScriptName = "SocketReceiver"
 Website = "https://github.com/nossebro/SocketReceiver"
 Creator = "nossebro"
-Version = "0.0.5"
+Version = "0.0.6"
 Description = "Read events from the local SLCB socket"
 
 #---------------------------------------
@@ -72,10 +72,9 @@ class Settings(object):
 			ui = json.load(f, encoding="utf-8")
 		for key in ui:
 			try:
-				defaults[key] = ui[key]['value']
+				defaults[key] = ui[key]["value"]
 			except:
-				if key != "output_file":
-					Parent.Log(ScriptName, "DefaultSettings(): Could not find key {0} in settings".format(key))
+				continue
 		return defaults
 
 	def Reload(self, jsondata):
@@ -161,15 +160,26 @@ def Unload():
 #   Chatbot Save Settings Function
 #---------------------------------------
 def ReloadSettings(jsondata):
+	global Logger
 	ScriptSettings.Reload(jsondata)
-	Logger.debug("Settings reloaded")
-
-	if LocalSocket and not LocalSocket.IsAlive:
-		if all (keys in LocalAPI for keys in ("Key", "Socket")):
-			LocalSocket.Connect()
-
 	Parent.BroadcastWsEvent('{0}_UPDATE_SETTINGS'.format(ScriptName.upper()), json.dumps(ScriptSettings.__dict__))
-	Logger.debug(json.dumps(ScriptSettings.__dict__), True)
+	if Logger:
+		Logger.debug("Settings reloaded")
+		Unload()
+		Init()
+
+#---------------------------------------
+#   Chatbot Toggle Function
+#---------------------------------------
+def ScriptToggled(state):
+	global Logger
+	if state:
+		if not Logger:
+			Init()
+		Logger.debug("Script toggled on")
+	else:
+		Logger.debug("Script toggled off")
+		Unload()
 
 #---------------------------------------
 #   Chatbot Execute Function
@@ -232,9 +242,10 @@ def LocalSocketDisconnected(ws, data):
 #   LocalSocket Error Function
 #---------------------------------------
 def LocalSocketError(ws, data):
+	global Logger
 	Logger.error(data.Message)
 	if data.Exception:
-		Logger.exception(data.Exception)
+		Logger.debug(data.Exception, exc_info=True)
 
 #---------------------------------------
 #   LocalSocket Event Function

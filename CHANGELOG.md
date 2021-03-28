@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.6 - Script toggle
+
+* Add script toggle
+* Better reload of settings
+
 ## 0.0.5 - API_Key updates
 
 * Minor code changes
