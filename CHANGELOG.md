@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.7 - Better toggle
+
+* Wait with connect until toggle is checked
+* Save settings file
+
 ## 0.0.6 - Script toggle
 
 * Add script toggle

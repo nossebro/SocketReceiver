@@ -20,7 +20,7 @@ from WebSocketSharp import WebSocket
 ScriptName = "SocketReceiver"
 Website = "https://github.com/nossebro/SocketReceiver"
 Creator = "nossebro"
-Version = "0.0.6"
+Version = "0.0.7"
 Description = "Read events from the local SLCB socket"
 
 #---------------------------------------
@@ -59,7 +59,7 @@ class Settings(object):
 		except:
 			self.__dict__ = defaults
 
-	def MergeSettings(self, x = dict(), y = dict()):
+	def MergeSettings(self, x=dict(), y=dict()):
 		z = x.copy()
 		for attr in x:
 			if attr in y:
@@ -79,6 +79,18 @@ class Settings(object):
 
 	def Reload(self, jsondata):
 		self.__dict__ = self.MergeSettings(self.DefaultSettings(UIConfigFile), json.loads(jsondata, encoding="utf-8"))
+		self.SaveSettings(SettingsFile)
+
+	def SaveSettings(self, settingsfile=None):
+		defaults = self.DefaultSettings(UIConfigFile)
+		self.__dict__ = self.MergeSettings(defaults, self.__dict__)
+		try:
+			with codecs.open(settingsfile, encoding="utf-8-sig", mode="w") as f:
+				json.dump(self.__dict__, f, encoding="utf-8", indent=2)
+			with codecs.open(settingsfile.replace("json", "js"), encoding="utf-8-sig", mode="w") as f:
+				f.writelines("var settings = {0};".format(json.dumps(self.__dict__, encoding="utf-8", indent=2)))
+		except:
+			Parent.Log(ScriptName, "SaveSettings(): Could not write settings to file")
 
 #---------------------------------------
 #   Script Functions
@@ -137,9 +149,6 @@ def Init():
 		LocalSocket.OnClose += LocalSocketDisconnected
 		LocalSocket.OnMessage += LocalSocketEvent
 		LocalSocket.OnError += LocalSocketError
-		LocalSocket.Connect()
-	
-	Parent.AddCooldown(ScriptName, "LocalSocket", 10)
 
 #---------------------------------------
 #   Chatbot Script Unload Function
@@ -165,8 +174,8 @@ def ReloadSettings(jsondata):
 	Parent.BroadcastWsEvent('{0}_UPDATE_SETTINGS'.format(ScriptName.upper()), json.dumps(ScriptSettings.__dict__))
 	if Logger:
 		Logger.debug("Settings reloaded")
-		Unload()
-		Init()
+		ScriptToggled(False)
+		ScriptToggled(True)
 
 #---------------------------------------
 #   Chatbot Toggle Function
@@ -176,6 +185,8 @@ def ScriptToggled(state):
 	if state:
 		if not Logger:
 			Init()
+		LocalSocket.Connect()
+		Parent.AddCooldown(ScriptName, "LocalSocket", 10)
 		Logger.debug("Script toggled on")
 	else:
 		Logger.debug("Script toggled off")
@@ -191,6 +202,9 @@ def Execute(data):
 #   Chatbot Tick Function
 #---------------------------------------
 def Tick():
+	global Logger
+	if not Logger:
+		return
 	global LocalSocketIsConnected
 	if not Parent.IsOnCooldown(ScriptName, "LocalSocket") and LocalSocket and not LocalSocketIsConnected and all (keys in LocalAPI for keys in ("Key", "Socket")):
 		Logger.warning("No EVENT_CONNECTED received from LocalSocket, reconnecting")
@@ -213,12 +227,13 @@ def Tick():
 #   LocalSocket Connect Function
 #---------------------------------------
 def LocalSocketConnected(ws, data):
+	global Logger
 	global LocalAPI
 	Auth = {
 		"author": Creator,
 		"website": Website,
 		"api_key": LocalAPI["Key"],
-		"events": ScriptSettings.Events.split(",")
+		"events": [x.strip() for x in ScriptSettings.Events.split(',') ]
 	}
 	ws.Send(json.dumps(Auth))
 	Logger.debug("Auth: {0}".format(json.dumps(Auth)))
@@ -227,6 +242,7 @@ def LocalSocketConnected(ws, data):
 #   LocalSocket Disconnect Function
 #---------------------------------------
 def LocalSocketDisconnected(ws, data):
+	global Logger
 	global LocalSocketIsConnected
 	LocalSocketIsConnected = False
 	if data.Reason:
@@ -251,6 +267,7 @@ def LocalSocketError(ws, data):
 #   LocalSocket Event Function
 #---------------------------------------
 def LocalSocketEvent(ws, data):
+	global Logger
 	if data.IsText:
 		event = json.loads(data.Data)
 		if "data" in event and isinstance(event["data"], str):
