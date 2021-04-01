@@ -171,9 +171,9 @@ def Unload():
 def ReloadSettings(jsondata):
 	global Logger
 	ScriptSettings.Reload(jsondata)
-	Parent.BroadcastWsEvent('{0}_UPDATE_SETTINGS'.format(ScriptName.upper()), json.dumps(ScriptSettings.__dict__))
 	if Logger:
-		Logger.debug("Settings reloaded")
+		Logger.debug({ "event": "{0}_UPDATE_SETTINGS".format(ScriptName.upper()), "data": ScriptSettings.__dict__ })
+		SendEvent({ "event": "{0}_UPDATE_SETTINGS".format(ScriptName.upper()), "data": ScriptSettings.__dict__ })
 		ScriptToggled(False)
 		ScriptToggled(True)
 
